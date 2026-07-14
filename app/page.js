@@ -8,14 +8,37 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Definición de estructuras de datos para TypeScript
+interface Producto {
+  id: number;
+  codigo: string;
+  nombre: string;
+  precio_venta: number;
+  costo_proveedor: number;
+  enlace_compra?: string;
+  creado_el?: string;
+}
+
+interface Pedido {
+  id: number;
+  nombre_cliente: string;
+  whatsapp: string;
+  producto_id: number;
+  cantidad: number;
+  precio_venta_capturado: number;
+  costo_capturado: number;
+  monto_pagado: number;
+  estatus: string;
+  creado_el?: string;
+}
+
 export default function AdminDashboard() {
   // Navegación lateral: 'dashboard' | 'pedidos' | 'productos'
   const [activeTab, setActiveTab] = useState<'dashboard' | 'pedidos' | 'productos'>('dashboard');
 
   // Estados de datos
-  const [productos, setProductos] = useState<any[]>([]);
-  const [pedidos, setPedidos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
 
   // Estados de formularios (Productos)
   const [prodCodigo, setProdCodigo] = useState('');
@@ -40,17 +63,14 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
     try {
       const { data: prodData } = await supabase.from('productos').select('*').order('nombre', { ascending: true });
       const { data: pedData } = await supabase.from('pedidos').select('*').order('id', { ascending: false });
       
-      if (prodData) setProductos(prodData);
-      if (pedData) setPedidos(pedData);
+      if (prodData) setProductos(prodData as Producto[]);
+      if (pedData) setPedidos(pedData as Pedido[]);
     } catch (error) {
       console.error('Error cargando datos:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
